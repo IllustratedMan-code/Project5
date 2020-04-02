@@ -1,0 +1,23 @@
+#:kivy 1.11.1
+#:set outerrect 520
+#:set innerrect 500
+#:set size 1000
+
+<Car>:
+
+  canvas.after:
+
+    Color:
+      rgba: 0, 0, 1, 1
+    Rectangle:
+      pos:self.pos
+      size: 10, 10
+<board>:
+  car: Cars
+  canvas.before:
+    Rectangle:
+      pos: 0, 0
+      size: 500, 700
+  Car:
+    id: Cars
+    pos: self.parent.pos
