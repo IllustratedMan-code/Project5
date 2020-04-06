@@ -1,9 +1,30 @@
+<Car>:
+  canvas:
+    Color:
+      rgba:0, 1, 1, 1
+    Rectangle:
+      pos: self.pos
+      size: self.size
+
+<path>:
+  canvas:
+    Color:
+      rgba: 0, 0, 1, 1
+    Rectangle:
+      pos:self.pos
+      size:self.size
+
 <grid>:
   Widget:
     canvas:
       Rectangle:
         pos:self.pos
         size:self.size
+  Car:
+    size_hint: 0.03, 0.03
+    
+
+
 <box>:
 
   canvas:
@@ -12,4 +33,6 @@
     Rectangle:
       pos: self.pos
       size:self.size
+
+
 <rootclass>:
