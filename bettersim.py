@@ -39,6 +39,8 @@ class rootclass(GridLayout):
         # add an instance of the Co widget
         self.color = Co()
         self.add_widget(self.color)
+        self.add_widget(Button())
+        self.add_widget(Button())
 
         # update schedule for the widgets
         Clock.schedule_interval(self.g.update, 1/(60))
@@ -52,14 +54,16 @@ class grid(RelativeLayout):
     col = NumericProperty(0)
     time = NumericProperty(0)
     ax = NumericProperty(0.27)
-    ay = NumericProperty(0.40)
-
-
+    ay = NumericProperty(0.14)
+    dcount = 0
+    speed = 1
+    turns = 0
     listofboxes = []
     def __init__(self, **k):
         super(grid, self).__init__(**k)
-        width = 5
+        width = 2
         length = 4
+
 
         for w in range(width):
             for l in range(length):
@@ -77,19 +81,35 @@ class grid(RelativeLayout):
 
     def update(self, *a):
         self.time += 0.01
-        delta = behavior.Drive(1, self.car.angle)
-        self.ax = self.ax + delta[0]
-        self.ay = self.ay + delta[1]
-        self.car.x = self.size[0]*self.ax
-        self.car.y = self.size[1]*self.ay
-        self.car.angle -= 0
-        if self.car.angle > 360:
-            self.car.angle = 0
-        elif self.car.angle < 0:
-            self.car.angle = 360
+        delta = behavior.Drive(self.speed, self.car.angle)
+        #print(self.dcount)
+        if self.dcount > 20*abs(self.speed):
+            self.ax = self.ax
+            self.ay = self.ay
+            self.car.angle -= 90
+            self.dcount = 0
+            self.turns += 1
+        else:
+            self.ax = self.ax + delta[0]
+            self.ay = self.ay + delta[1]
 
-        self.col += 0.01
-        print(behavior.distancesensor(self.listofboxes, self.ax, self.ay, self.car.angle))
+            self.car.x = self.size[0]*self.ax
+            self.car.y = self.size[1]*self.ay
+            self.car.angle -= 0
+            if self.car.angle > 180:
+                self.car.angle += -360
+            elif self.car.angle <= -180:
+                self.car.angle +=360
+
+            distance = behavior.distancesensor(self.listofboxes, self.ax+0.01, self.ay+0.01, self.car.angle)
+            if distance != None:
+                self.col = 1
+                print(self.car.angle)
+                self.dcount = 0
+
+            else:
+                self.col = 0
+                self.dcount += 1
 
 
 # empty widget class filled with a box in .kv
@@ -108,7 +128,7 @@ class path(Widget):
 class Car(Widget):
     velocity = ListProperty([1, 15])
     k = 0
-    angle = NumericProperty(180)
+    angle = NumericProperty(0)
 
     def __init__(self, **k):
         super(Car, self).__init__(**k)
@@ -116,12 +136,10 @@ class Car(Widget):
 
 # color class indicating what the color sensor is seeing
 class Co(Widget):
-    c = NumericProperty(1)
+    c = NumericProperty(0)
 
     def colorchange(self, instance, value):
         self.c = value
-
-
 
 
 
