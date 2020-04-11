@@ -1,10 +1,18 @@
 <Car>:
   canvas:
+    PushMatrix
+    Rotate:
+      axis: 0, 0, 1
+      angle: self.angle
+      origin: self.center
+
+
     Color:
       rgba:0, 1, 1, 1
     Rectangle:
       pos: self.pos
       size: self.size
+    PopMatrix
 
 <path>:
   canvas:
@@ -13,16 +21,25 @@
     Rectangle:
       pos:self.pos
       size:self.size
+<Co>:
+  canvas:
+    Color:
+      rgba: self.c, 0, 0, 1
+    Rectangle:
+      pos:self.pos
+      size:self.size
 
 <grid>:
+  car: vroom
   Widget:
     canvas:
       Rectangle:
         pos:self.pos
         size:self.size
   Car:
+    id: vroom
     size_hint: 0.03, 0.03
-    
+
 
 
 <box>:
