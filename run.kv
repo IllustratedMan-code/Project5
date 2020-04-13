@@ -8,7 +8,7 @@
 
 
     Color:
-      rgba:0, 1, 1, 1
+      rgba:0, 1, 0, 1
     Rectangle:
       pos: self.pos
       size: self.size
@@ -28,6 +28,10 @@
     Rectangle:
       pos:self.pos
       size:self.size
+  Label:
+    text: self.parent.txt
+    size: self.parent.size
+    pos: self.parent.pos
 
 <grid>:
   car: vroom
@@ -40,15 +44,44 @@
         size:self.size
   Car:
     id: vroom
-    size_hint: 0.02, 0.02
+    size_hint: 0.015, 0.04
 
+<Lcd>:
+  BoxLayout:
+    orientation: 'vertical'
+    Label:
+      text_size: self.size
+      halign: 'left'
+      valign: 'center'
+      size:self.size
+      pos: self.pos
+      text: "  A:" + self.parent.parent.A
+    Label:
+      text_size: self.size
+      halign: 'left'
+      valign: 'center'
+      size: self.size
+      pos: self.pos
+      text: "  B:" + self.parent.parent.B
+    Label:
+      text_size: self.size
+      halign: 'left'
+      valign: 'center'
+      size: self.size
+      pos: self.pos
+      text: "  C:" + self.parent.parent.C
 
+<triangulate>:
+  Label:
+    size: self.parent.size
+    pos: self.parent.pos
+    text: "ACTIVATE IPS"
 
 <box>:
 
   canvas:
     Color:
-      rgba: 1, 0, 0, 1
+      rgba: 1, 0, self.bc, 1
     Rectangle:
       pos: self.pos
       size:self.size
