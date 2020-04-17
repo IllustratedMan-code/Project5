@@ -49,7 +49,7 @@ class rootclass(GridLayout):
         self.add_widget(self.tri)
 
         # update schedule for the widgets
-        Clock.schedule_interval(self.g.update, 1/(60))
+        Clock.schedule_interval(self.g.update, 1 / (60))
         self.g.bind(size=self.g.resize)
         self.g.bind(size=self.lcd.upsize)
         self.g.bind(col=self.color.colorchange)
@@ -71,36 +71,45 @@ class grid(RelativeLayout):
     speed = 1
     turns = 0
     listofboxes = []
+
     def __init__(self, **k):
         super(grid, self).__init__(**k)
         width = 2
         length = 4
 
-
         for w in range(width):
             for l in range(length):
                 for i in range(2):
                     for a in range(4):
-                        self.add_widget(box(size_hint=(.03, .03), pos_hint={'x': 0.3 + i * .04 + w*2*0.05, 'y': 0.14 + a*.04+l*4*0.05}), index = 1)
-                        self.listofboxes.append([0.3+i*0.04+w*2*0.05, 0.14+a*0.04+l*4*0.05])
+                        self.add_widget(box(size_hint=(.03, .03), pos_hint={
+                                        'x': 0.3 + i * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}), index=1)
+                        self.listofboxes.append(
+                            [0.3 + i * 0.04 + w * 2 * 0.05, 0.14 + a * 0.04 + l * 4 * 0.05])
 
-                self.add_widget(path(size_hint=((0.13-0.03)*width+0.03, 0.048), pos_hint={'x':0.3-0.03, 'y':0.11+(0.1)*2*(l)-0.0187}), index=1)
-                self.add_widget(path(size_hint=((0.13-0.03)*width+0.03, 0.048), pos_hint={'x':0.3-0.03, 'y':0.11+(0.1*2*length-0.0197)}), index=1)
+                self.add_widget(path(size_hint=((0.13 - 0.03) * width + 0.03, 0.048), pos_hint={
+                                'x': 0.3 - 0.03, 'y': 0.11 + (0.1) * 2 * (l) - 0.0187}), index=1)
+                self.add_widget(path(size_hint=((0.13 - 0.03) * width + 0.03, 0.048), pos_hint={
+                                'x': 0.3 - 0.03, 'y': 0.11 + (0.1 * 2 * length - 0.0197)}), index=1)
 
-            self.add_widget(path(size_hint=(0.03, (0.1)*(length*2)-0.05+0.001), pos_hint={'x':0.27+w*0.1, 'y':0.14-0.001}), index=1)
-            self.add_widget(path(size_hint=(0.03, (0.1)*(length*2)-0.05+0.001), pos_hint={'x':0.27+width*0.1, 'y':0.14-0.001}), index=1)
+            self.add_widget(path(size_hint=(0.03, (0.1) * (length * 2) - 0.05 + 0.001),
+                                 pos_hint={'x': 0.27 + w * 0.1, 'y': 0.14 - 0.001}), index=1)
+            self.add_widget(path(size_hint=(0.03, (0.1) * (length * 2) - 0.05 + 0.001),
+                                 pos_hint={'x': 0.27 + width * 0.1, 'y': 0.14 - 0.001}), index=1)
         print(self.listofboxes[1])
-        self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': .27, 'y': .1-0.009}, bc=1), index=1)
-        self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': .47, 'y': .1-0.009}, bc=1), index=1)
-        self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': .47, 'y': .915-0.009}, bc=1), index=1)
-        #self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': 0.3, 'y': 0.31-0.009}, bc = 0), index=1)
-        #self.listofboxes.append([0.3, 0.31-0.009])
+        self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={
+                        'x': .27, 'y': .1 - 0.009}, bc=1), index=1)
+        self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={
+                        'x': .47, 'y': .1 - 0.009}, bc=1), index=1)
+        self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={
+                        'x': .47, 'y': .915 - 0.009}, bc=1), index=1)
+        # self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': 0.3, 'y': 0.31-0.009}, bc = 0), index=1)
+        # self.listofboxes.append([0.3, 0.31-0.009])
 
     def update(self, *a):
         self.time += 0.01
         delta = behavior.Drive(self.speed, self.car.angle)
 
-        if self.dcount > 15*abs(self.speed):
+        if self.dcount > 15 * abs(self.speed):
             self.ax = self.ax
             self.ay = self.ay
             self.car.angle -= 90
@@ -110,15 +119,16 @@ class grid(RelativeLayout):
             self.ax = self.ax + delta[0]
             self.ay = self.ay + delta[1]
 
-            self.car.center_x = self.size[0]*self.ax
-            self.car.center_y = self.size[1]*self.ay
+            self.car.center_x = self.size[0] * self.ax
+            self.car.center_y = self.size[1] * self.ay
             self.car.angle -= 0
             if self.car.angle > 180:
                 self.car.angle += -360
             elif self.car.angle <= -180:
                 self.car.angle += 360
 
-            self.d = behavior.distancesensor(self.listofboxes, self.ax, self.ay, self.car.angle)
+            self.d = behavior.distancesensor(
+                self.listofboxes, self.ax, self.ay, self.car.angle)
             if self.d != None:
                 self.distance = self.d
                 self.col = 1
@@ -133,8 +143,8 @@ class grid(RelativeLayout):
         self.ax = self.ax
         self.ay = self.ay
 
-        self.car.x = self.size[0]*self.ax
-        self.car.y = self.size[1]*self.ay
+        self.car.x = self.size[0] * self.ax
+        self.car.y = self.size[1] * self.ay
 
 
 # empty widget class filled with a box in .kv
@@ -189,11 +199,11 @@ class Lcd(BoxLayout):
 
     def upposition(self, instance, value):
 
-        x = value[0]/self.s[0]
-        y = value[1]/self.s[1]
-        self.a = ((x-0.27)**(2)+(y-(0.1-0.009))**(2))**0.5
-        self.b = ((x-0.47)**(2)+(y-(0.1-0.009))**(2))**0.5
-        self.c = ((x-0.27)**(2)+(y-(0.915-0.009))**(2))**0.5
+        x = value[0] / self.s[0]
+        y = value[1] / self.s[1]
+        self.a = ((x - 0.27)**(2) + (y - (0.1 - 0.009))**(2))**0.5
+        self.b = ((x - 0.47)**(2) + (y - (0.1 - 0.009))**(2))**0.5
+        self.c = ((x - 0.27)**(2) + (y - (0.915 - 0.009))**(2))**0.5
 
     def dispposition(self, instance):
         self.A = str(self.a)
