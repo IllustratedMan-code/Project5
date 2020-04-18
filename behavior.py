@@ -1,5 +1,5 @@
 import math
-
+import random
 
 def Drive(direction, angle):
     x = direction * math.sin(((-angle)/180)*math.pi)*0.001
@@ -24,13 +24,54 @@ def arrayofboxes(alist, xp, yp):
         print(abs(x-xp), abs(y-yp))
 
 
-def colorsensor(boxlist, xy):
+def colorsensor(boxlist, xy, barcodes):
+    boxorientation = []
+    k = 0
+    for i in (boxlist):
+        k += 1
+        if k <= 4:
+            boxorientation.append(0)
+        elif k > 4:
+            boxorientation.append(1)
+            if k >= 8:
+                k = 0
+    r = 0
+    for i in range(len(boxlist)):
 
-    pass
+        if boxorientation[i] == 0:
+            r = 0
+            for a in reversed(barcodes[i]):
+                barx = boxlist[i][0]
+                bary = boxlist[i][1] + r*(0.03/4)
+                barw = boxlist[i][0] + 0.03/5
+                barl = boxlist[i][1] + (r+1)*(0.03/4)
+                if barx <= xy[0] <= barw and bary <= xy[1] <= barl:
+                    return [a]
+                r += 1
+
+        else:
+            r = 3
+            for a in reversed(barcodes[i]):
+                barx = boxlist[i][0] + 0.03
+                bary = boxlist[i][1] + r*(0.03/4)
+                barw = boxlist[i][0] + 0.03 - 0.03/5
+                barl = boxlist[i][1] + (r+1)*(0.03/4)
+                if barw <= xy[0] <= barx and bary <= xy[1] <= barl:
+                    return [a]
+                r -= 1
+
+
+def createbarcode():
+    a = random.randint(0, 1)
+    b = random.randint(0, 1)
+    c = random.randint(0, 1)
+    d = random.randint(0, 1)
+    return([[a, a, a, 1], [b, b, b, 1], [c, c, c, 1], [d, d, d, 1]])
+
 
 # distance sensor is fully functional, as long as the car moves in 90d
 # increments
-def distancesensor(boxlist, xp, yp, angle):
+def distancesensor(boxlist, xp, yp, angle, barcodes):
     thetalist = []
     intersections = []
     distances = []
@@ -84,4 +125,6 @@ def distancesensor(boxlist, xp, yp, angle):
     if distances != []:
 
         xy = intersections[distances.index(min(distances))]
-        return(min(distances))
+        color = colorsensor(boxlist, xy, barcodes)
+        #print(color)
+        return(min(distances), color, xy)

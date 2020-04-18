@@ -61,34 +61,39 @@ class rootclass(GridLayout):
 # this is the class that draws the boxes and path for the robot to follow
 class grid(RelativeLayout):
     car = ObjectProperty(None)
-    col = NumericProperty(0)
+    col = ListProperty(None)
     time = NumericProperty(0)
     ax = NumericProperty(0.285)
     ay = NumericProperty(0.14)
     distance = NumericProperty(0)
     d = 0
     dcount = 0
-    speed = 2
+    speed = 0.5
     turns = 0
     listofboxes = []
+    barcodes = []
+
 
     def __init__(self, **k):
         super(grid, self).__init__(**k)
-        width = 2
-        length = 4
-
+        width = 4
+        length = 2
+        # creates the "facility" with box widgets and path widgets according
+        # to the width and
         for w in range(width):
             for l in range(length):
                 for i in range(2):
                     for a in range(4):
+                        bar = behavior.createbarcode()
                         if i == 0:
                             self.add_widget(box(size_hint=(.03, .03), pos_hint={
-                                            'x': 0.3 + i * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}, angle=0), index=1)
+                                            'x': 0.3 + i * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}, angle=0, barcode=bar), index=1)
                         else:
                             self.add_widget(box(size_hint=(.03, .03), pos_hint={
-                                            'x': 0.3 + i * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}, angle=180), index=1)
+                                            'x': 0.3 + i * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}, angle=180, barcode=bar), index=1)
                         self.listofboxes.append(
                             [0.3 + i * 0.04 + w * 2 * 0.05, 0.14 + a * 0.04 + l * 4 * 0.05])
+                        self.barcodes.append(bar)
 
                 self.add_widget(path(size_hint=((0.13 - 0.03) * width + 0.03, 0.048), pos_hint={
                                 'x': 0.3 - 0.03, 'y': 0.11 + (0.1) * 2 * (l) - 0.0187}), index=1)
@@ -100,12 +105,14 @@ class grid(RelativeLayout):
             self.add_widget(path(size_hint=(0.03, (0.1) * (length * 2) - 0.05 + 0.001),
                                  pos_hint={'x': 0.27 + width * 0.1, 'y': 0.14 - 0.001}), index=1)
         print(self.listofboxes[1])
-        self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={
-                        'x': .27, 'y': .1 - 0.009}, bc=1), index=1)
-        self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={
-                        'x': .47, 'y': .1 - 0.009}, bc=1), index=1)
-        self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={
-                        'x': .47, 'y': .915 - 0.009}, bc=1), index=1)
+        self.add_widget(home(size_hint=(0.03, 0.03), pos_hint={
+                        'x': .27, 'y': .1 - 0.009}), index=1)
+        self.add_widget(home(size_hint=(0.03, 0.03), pos_hint={
+                        'x': .27 + width*0.1, 'y': .1 - 0.009}), index=1)
+        self.add_widget(home(size_hint=(0.03, 0.03), pos_hint={
+                        'x': .27 + width *0.1, 'y': .139 + (0.1) * (length * 2) - 0.05 + 0.02}), index=1)
+        self.add_widget(home(size_hint=(0.03, 0.03), pos_hint={
+                        'x': .27 , 'y': .139 + (0.1) * (length * 2) - 0.05 + 0.02}), index=1)
         #self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': 0.3, 'y': 0.31-0.009}, bc = 0), index=1)
         #self.listofboxes.append([0.3, 0.31-0.009])
 
@@ -134,15 +141,20 @@ class grid(RelativeLayout):
                 self.car.angle += 360
 
             self.d = behavior.distancesensor(
-                self.listofboxes, self.ax, self.ay, self.car.angle)
+                self.listofboxes, self.ax, self.ay, self.car.angle, self.barcodes)
             if self.d is not None:
-                self.distance = self.d
-                self.col = 1
+                self.distance = self.d[0]
+                
+                if self.d[1] is not None:
+                    self.col = self.d[1]
+
+                else:
+                    self.col = [[1, 0, 0, 1]]
                 self.dcount = 0
 
             else:
                 self.distance = -1000000000
-                self.col = 0
+                self.col = [[0, 0, 1, 1]]
                 self.dcount += 1
 
     def resize(self, *a):
@@ -157,6 +169,11 @@ class grid(RelativeLayout):
 class box(Widget):
     bc = NumericProperty(0)
     angle = NumericProperty(0)
+    barcode = ListProperty(None)
+    pass
+
+
+class home(Widget):
     pass
 
 
@@ -178,11 +195,12 @@ class Car(Widget):
 
 # color class indicating what the color/distance sensor is seeing
 class Co(Widget):
-    c = NumericProperty(0)
+    c = ListProperty([0, 0, 1, 1])
     txt = StringProperty("start")
 
     def colorchange(self, instance, value):
-        self.c = value
+        print(value)
+        self.c = value[0]
 
     def valuechange(self, instance, value):
         if value == -1000000000:
