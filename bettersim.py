@@ -81,8 +81,12 @@ class grid(RelativeLayout):
             for l in range(length):
                 for i in range(2):
                     for a in range(4):
-                        self.add_widget(box(size_hint=(.03, .03), pos_hint={
-                                        'x': 0.3 + i * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}), index=1)
+                        if i == 0:
+                            self.add_widget(box(size_hint=(.03, .03), pos_hint={
+                                            'x': 0.3 + i * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}, angle=0), index=1)
+                        else:
+                            self.add_widget(box(size_hint=(.03, .03), pos_hint={
+                                            'x': 0.3 + i * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}, angle=180), index=1)
                         self.listofboxes.append(
                             [0.3 + i * 0.04 + w * 2 * 0.05, 0.14 + a * 0.04 + l * 4 * 0.05])
 
@@ -102,8 +106,8 @@ class grid(RelativeLayout):
                         'x': .47, 'y': .1 - 0.009}, bc=1), index=1)
         self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={
                         'x': .47, 'y': .915 - 0.009}, bc=1), index=1)
-        self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': 0.3, 'y': 0.31-0.009}, bc = 0), index=1)
-        self.listofboxes.append([0.3, 0.31-0.009])
+        #self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': 0.3, 'y': 0.31-0.009}, bc = 0), index=1)
+        #self.listofboxes.append([0.3, 0.31-0.009])
 
     # car controlling function
     def update(self, *a):
@@ -132,8 +136,7 @@ class grid(RelativeLayout):
             self.d = behavior.distancesensor(
                 self.listofboxes, self.ax, self.ay, self.car.angle)
             if self.d is not None:
-                self.distance = self.d[0]
-                print(self.d[1])
+                self.distance = self.d
                 self.col = 1
                 self.dcount = 0
 
@@ -153,6 +156,7 @@ class grid(RelativeLayout):
 # empty widget class filled with a box in .kv
 class box(Widget):
     bc = NumericProperty(0)
+    angle = NumericProperty(0)
     pass
 
 

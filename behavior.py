@@ -24,12 +24,18 @@ def arrayofboxes(alist, xp, yp):
         print(abs(x-xp), abs(y-yp))
 
 
+def colorsensor(boxlist, xy):
+
+    pass
+
+# distance sensor is fully functional, as long as the car moves in 90d
+# increments
 def distancesensor(boxlist, xp, yp, angle):
     thetalist = []
     intersections = []
     distances = []
     for i in boxlist:
-
+        # corner 1-4 of box in boxlist
         c1 = (math.atan2((i[1]-yp), (i[0]-xp)))
 
         c2 = (math.atan2((i[1])-yp, (((i[0]+0.03))-xp)))
@@ -76,7 +82,6 @@ def distancesensor(boxlist, xp, yp, angle):
                 pass
 
     if distances != []:
-        #print(intersections)
-        #print(xp, yp)
-        #print(distances)
+
+        xy = intersections[distances.index(min(distances))]
         return(min(distances))

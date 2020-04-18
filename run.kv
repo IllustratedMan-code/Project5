@@ -78,13 +78,66 @@
     text: "ACTIVATE IPS"
 
 <box>:
+  canvas.before:
+    PushMatrix
+    Rotate:
+      axis: 0, 0, 1
+      angle: self.angle
+      origin: self.center
+  canvas.after:
+    PopMatrix
 
-  canvas:
-    Color:
-      rgba: 1, 0, self.bc, 1
-    Rectangle:
-      pos: self.pos
-      size:self.size
+  RelativeLayout:
+    size: self.parent.size
+    pos: self.parent.pos
+
+
+
+    Widget:
+      size_hint: (0.2, 0.25)
+      pos_hint: {'x':0, 'y':0.75}
+      canvas:
+        Color:
+          rgba: 1, 1, 1, 1
+        Rectangle:
+          pos: self.pos
+          size: self.size
+    Widget:
+      size_hint: (0.2, 0.25)
+      pos_hint: {'x':0, 'y':0.5}
+      canvas:
+        Color:
+          rgba: 0, 0, 0, 1
+        Rectangle:
+          pos: self.pos
+          size: self.size
+    Widget:
+      size_hint: (0.2, 0.25)
+      pos_hint: {'x':0, 'y':0.25}
+      canvas:
+        Color:
+          rgba: 1, 1, 1, 1
+        Rectangle:
+          pos: self.pos
+          size: self.size
+    Widget:
+      size_hint: (0.2, 0.25)
+      pos_hint: {'x':0}
+      canvas:
+        Color:
+          rgba: 0, 0, 0, 1
+        Rectangle:
+          pos: self.pos
+          size: self.size
+    Widget:
+      size_hint: (0.8, 1)
+      pos_hint: {'x':0.2}
+      canvas:
+        Color:
+          rgba: 1, 0, self.parent.parent.bc, 1
+        Rectangle:
+          pos: self.pos
+          size:self.size
 
 
 <rootclass>:
