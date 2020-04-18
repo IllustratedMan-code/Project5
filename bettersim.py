@@ -68,7 +68,7 @@ class grid(RelativeLayout):
     distance = NumericProperty(0)
     d = 0
     dcount = 0
-    speed = 1
+    speed = 2
     turns = 0
     listofboxes = []
 
@@ -102,14 +102,16 @@ class grid(RelativeLayout):
                         'x': .47, 'y': .1 - 0.009}, bc=1), index=1)
         self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={
                         'x': .47, 'y': .915 - 0.009}, bc=1), index=1)
-        # self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': 0.3, 'y': 0.31-0.009}, bc = 0), index=1)
-        # self.listofboxes.append([0.3, 0.31-0.009])
+        self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': 0.3, 'y': 0.31-0.009}, bc = 0), index=1)
+        self.listofboxes.append([0.3, 0.31-0.009])
 
+    # car controlling function
     def update(self, *a):
         self.time += 0.01
         delta = behavior.Drive(self.speed, self.car.angle)
 
-        if self.dcount > 15 * abs(self.speed):
+        # if car does not see a cube for a certain amount of time then turns
+        if self.dcount > 15 * (1/abs(self.speed)):
             self.ax = self.ax
             self.ay = self.ay
             self.car.angle -= 90
@@ -129,8 +131,9 @@ class grid(RelativeLayout):
 
             self.d = behavior.distancesensor(
                 self.listofboxes, self.ax, self.ay, self.car.angle)
-            if self.d != None:
-                self.distance = self.d
+            if self.d is not None:
+                self.distance = self.d[0]
+                print(self.d[1])
                 self.col = 1
                 self.dcount = 0
 
