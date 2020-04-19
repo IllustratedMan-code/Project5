@@ -71,11 +71,90 @@
       pos: self.pos
       text: "  C:" + self.parent.parent.C
 
+<BarcodeButtonLayout>:
+  b1: bar1
+  b2: bar2
+  b3: bar3
+  b4: bar4
+
+  Barcode1:
+    id: bar1
+  Barcode2:
+    id: bar2
+  Barcode3:
+    id: bar3
+  Barcode4:
+    id: bar4
+
+<ButtonLayout>:
+  boxy: b
+  barcodes: bars
+  orientation: 'vertical'
+  BarcodeButtonLayout:
+    id: bars
+  Tribox:
+    id: b
+<Tribox>:
+  curbar: c
+  tri: t
+
+  Triangulate:
+    id:t
+  Cbar:
+    id:c
+
+<Cbar>:
+  Image:
+    source: self.parent.id
+    pos: self.parent.pos
+    size: self.parent.size
+
 <triangulate>:
   Label:
     size: self.parent.size
     pos: self.parent.pos
     text: "ACTIVATE IPS"
+
+<Barcode1>:
+  Image:
+    source: 'barcode1.png'
+    size: self.parent.size
+    pos: self.parent.pos
+
+<Barcode2>:
+  Image:
+    source: 'barcode2.png'
+    size: self.parent.size
+    pos: self.parent.pos
+
+<Barcode3>:
+  Image:
+    source: 'barcode3.png'
+    size: self.parent.size
+    pos: self.parent.pos
+
+<Barcode4>:
+  Image:
+    source: 'barcode4.png'
+    size: self.parent.size
+    pos: self.parent.pos
+
+<VisionBox>:
+  col: c
+  barcodes: b
+
+  Barcodereader:
+    id: b
+
+  Co:
+    id: c
+
+<Barcodereader>:
+  Image:
+    source: self.parent.id
+    size: self.parent.size
+    pos: self.parent.pos
+
 <home>:
   canvas:
     Color:
@@ -83,6 +162,8 @@
     Rectangle:
       size: self.size
       pos: self.pos
+
+
 
 <box>:
   canvas.before:
@@ -105,7 +186,7 @@
       pos_hint: {'x':0, 'y':0.75}
       canvas:
         Color:
-          rgba: self.parent.parent.barcode[0]
+          rgba: self.parent.parent.barcode[3]
         Rectangle:
           pos: self.pos
           size: self.size
@@ -114,7 +195,7 @@
       pos_hint: {'x':0, 'y':0.5}
       canvas:
         Color:
-          rgba: self.parent.parent.barcode[1]
+          rgba: self.parent.parent.barcode[2]
         Rectangle:
           pos: self.pos
           size: self.size
@@ -123,7 +204,7 @@
       pos_hint: {'x':0, 'y':0.25}
       canvas:
         Color:
-          rgba: self.parent.parent.barcode[2]
+          rgba: self.parent.parent.barcode[1]
         Rectangle:
           pos: self.pos
           size: self.size
@@ -132,7 +213,7 @@
       pos_hint: {'x':0}
       canvas:
         Color:
-          rgba: self.parent.parent.barcode[3]
+          rgba: self.parent.parent.barcode[0]
         Rectangle:
           pos: self.pos
           size: self.size

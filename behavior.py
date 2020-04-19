@@ -1,6 +1,7 @@
 import math
 import random
 
+
 def Drive(direction, angle):
     x = direction * math.sin(((-angle)/180)*math.pi)*0.001
     y = direction * math.cos(((-angle)/180)*math.pi)*0.001
@@ -24,6 +25,22 @@ def arrayofboxes(alist, xp, yp):
         print(abs(x-xp), abs(y-yp))
 
 
+'''def readbarcode(color, colorlist):
+    b = [0, 0, 0, 1]
+    w = [1, 1, 1, 1]
+    r = [1, 0, 0, 0]
+    if colorlist[0] == b and colorlist w]:
+        return([], 1)
+    elif colorlist == [b, w, b, w]:
+        return([], 2)
+    elif colorlist == [b, b, w, w]:
+
+    for c in colorlist
+        if color == [0, 0, 0, 1] or [1, 1, 1, 1]:
+
+            colorlist.append(color)'''
+
+
 def colorsensor(boxlist, xy, barcodes):
     boxorientation = []
     k = 0
@@ -40,7 +57,7 @@ def colorsensor(boxlist, xy, barcodes):
 
         if boxorientation[i] == 0:
             r = 0
-            for a in reversed(barcodes[i]):
+            for a in barcodes[i]:
                 barx = boxlist[i][0]
                 bary = boxlist[i][1] + r*(0.03/4)
                 barw = boxlist[i][0] + 0.03/5
@@ -51,7 +68,7 @@ def colorsensor(boxlist, xy, barcodes):
 
         else:
             r = 3
-            for a in reversed(barcodes[i]):
+            for a in barcodes[i]:
                 barx = boxlist[i][0] + 0.03
                 bary = boxlist[i][1] + r*(0.03/4)
                 barw = boxlist[i][0] + 0.03 - 0.03/5
@@ -62,15 +79,33 @@ def colorsensor(boxlist, xy, barcodes):
 
 
 def createbarcode():
-    a = random.randint(0, 1)
-    b = random.randint(0, 1)
-    c = random.randint(0, 1)
-    d = random.randint(0, 1)
+    color = random.randint(0, 3)
+    if color == 0:
+        a = 0
+        b = 1
+        c = 1
+        d = 1
+    if color == 1:
+        a = 0
+        b = 1
+        c = 0
+        d = 1
+    if color == 2:
+        a = 0
+        b = 0
+        c = 1
+        d = 1
+    if color == 3:
+        a = 0
+        b = 1
+        c = 1
+        d = 0
     return([[a, a, a, 1], [b, b, b, 1], [c, c, c, 1], [d, d, d, 1]])
 
 
 # distance sensor is fully functional, as long as the car moves in 90d
-# increments
+# returns color and distance to avoid performance issues
+# increments. xp, yp are coordinates of the car
 def distancesensor(boxlist, xp, yp, angle, barcodes):
     thetalist = []
     intersections = []
@@ -86,14 +121,22 @@ def distancesensor(boxlist, xp, yp, angle, barcodes):
 
         ma = min([c1, c2, c3, c4])
         Ma = max([c1, c2, c3, c4])
+
         if Ma-ma > math.pi:
             ma = ma + 2*math.pi
+
         if ((angle)/180)*math.pi >= min(Ma, ma) and ((angle)/180)*math.pi <= max(Ma, ma):
+            # distance from center of car to cube corner
             thetalist.append((((xp)-i[0])**(2)+(yp-i[1])**(2))**.5)
+
+            # calculates the slope
             m = round(math.tan(math.radians(angle)), 4)
+            # calculates the y intercept
             b = yp - m*xp
+            # x and y coordinates of the box
             x = i[0]
             y = i[1]
+            #
             if abs(m) > 1.6*10**16:
                 s2 = [xp, y]
 

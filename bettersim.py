@@ -39,26 +39,34 @@ class rootclass(GridLayout):
         self.add_widget(self.g)
 
         # add an instance of the Co widget
-        self.color = Co()
+        self.color = VisionBox()
         self.add_widget(self.color)
         # adds the lcd widget
         self.lcd = Lcd()
         self.add_widget(self.lcd)
         # adds the triangulate button
-        self.tri = triangulate()
-        self.add_widget(self.tri)
+        self.blayout = ButtonLayout()
+        self.add_widget(self.blayout)
 
         # update schedule for the widgets
         Clock.schedule_interval(self.g.update, 1 / (60))
         self.g.bind(size=self.g.resize)
         self.g.bind(size=self.lcd.upsize)
-        self.g.bind(col=self.color.colorchange)
-        self.g.bind(distance=self.color.valuechange)
+        self.g.bind(col=self.color.col.colorchange)
+        self.g.bind(distance=self.color.col.valuechange)
         self.g.car.bind(center=self.lcd.upposition)
-        self.tri.bind(on_release=self.lcd.dispposition)
+        self.g.bind(curbcode=self.color.barcodes.idupdate)
+        self.blayout.boxy.tri.bind(on_release=self.lcd.dispposition)
+        self.blayout.barcodes.b1.bind(on_release=self.blayout.boxy.curbar.bar1)
+        self.blayout.barcodes.b2.bind(on_release=self.blayout.boxy.curbar.bar2)
+        self.blayout.barcodes.b3.bind(on_release=self.blayout.boxy.curbar.bar3)
+        self.blayout.barcodes.b4.bind(on_release=self.blayout.boxy.curbar.bar4)
 
 
-# this is the class that draws the boxes and path for the robot to follow
+
+
+# this is the class that draws the boxes and path for the robot to follow in additon
+# to housing the main function controlling the robot
 class grid(RelativeLayout):
     car = ObjectProperty(None)
     col = ListProperty(None)
@@ -66,12 +74,18 @@ class grid(RelativeLayout):
     ax = NumericProperty(0.285)
     ay = NumericProperty(0.14)
     distance = NumericProperty(0)
+    barcode = ListProperty(None)
     d = 0
     dcount = 0
-    speed = 0.5
+    speed = 1
     turns = 0
     listofboxes = []
     barcodes = []
+    wcount = 0
+    bcount = 0
+    ccount = []
+    curbcode = ListProperty(None)
+
 
 
     def __init__(self, **k):
@@ -113,6 +127,8 @@ class grid(RelativeLayout):
                         'x': .27 + width *0.1, 'y': .139 + (0.1) * (length * 2) - 0.05 + 0.02}), index=1)
         self.add_widget(home(size_hint=(0.03, 0.03), pos_hint={
                         'x': .27 , 'y': .139 + (0.1) * (length * 2) - 0.05 + 0.02}), index=1)
+
+        # optional box in the path of the robot, must uncomment both lines to work
         #self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': 0.3, 'y': 0.31-0.009}, bc = 0), index=1)
         #self.listofboxes.append([0.3, 0.31-0.009])
 
@@ -144,18 +160,52 @@ class grid(RelativeLayout):
                 self.listofboxes, self.ax, self.ay, self.car.angle, self.barcodes)
             if self.d is not None:
                 self.distance = self.d[0]
-                
+
                 if self.d[1] is not None:
                     self.col = self.d[1]
+                    #print(self.col)
+                    if self.col[0] == [1, 1, 1, 1]:
+                        self.wcount += 1
+                        self.bcount = 0
+                        if self.wcount > 6:
+                            self.ccount.append(1)
+                            self.wcount = 0
+                            print(len(self.ccount))
+                            if len(self.ccount) == 4:
+                                print("hehehehe")
+                                self.curbcode = self.ccount
+
+
+
+                        #print(self.wcount)
+                    if self.col[0] == [0, 0, 0, 1]:
+                        self.bcount += 1
+                        self.wcount = 0
+                        if self.bcount > 6:
+                            self.ccount.append(0)
+                            self.bcount = 0
+                            print(len(self.ccount))
+                            if len(self.ccount) == 4:
+                                self.curbcode = self.ccount
+
+                        #print("bcount:{0}".format(self.bcount))
+
+
 
                 else:
                     self.col = [[1, 0, 0, 1]]
+                    self.wcount = 0
+                    self.bcount = 0
+                    self.ccount = []
                 self.dcount = 0
 
             else:
                 self.distance = -1000000000
                 self.col = [[0, 0, 1, 1]]
+                self.wcount = 0
+                self.bcount = 0
                 self.dcount += 1
+                self.ccount = []
 
     def resize(self, *a):
         self.ax = self.ax
@@ -165,14 +215,36 @@ class grid(RelativeLayout):
         self.car.y = self.size[1] * self.ay
 
 
-# empty widget class filled with a box in .kv
+class VisionBox(BoxLayout):
+    col = ObjectProperty(None)
+    barcodes = ObjectProperty(None)
+
+
+class Barcodereader(Widget):
+    id = StringProperty('black.png')
+
+    def idupdate(self, instance, value):
+
+        if value == [0, 1, 1, 1]:
+            self.id = 'Barcode1.png'
+        if value == [0, 1, 0, 1]:
+            self.id = 'Barcode2.png'
+        if value == [0, 0, 1, 1]:
+            self.id = 'Barcode3.png'
+        if value == [0, 1, 1, 0]:
+            self.id = 'Barcode4.png'
+            print(self.id)
+
+
+
+# class for the boxes that the robot picks up
 class box(Widget):
     bc = NumericProperty(0)
     angle = NumericProperty(0)
     barcode = ListProperty(None)
     pass
 
-
+# class for the "homes" that the robot uses to triangulate its position
 class home(Widget):
     pass
 
@@ -181,6 +253,8 @@ class home(Widget):
 class path(Widget):
 
     pass
+
+
 
 
 # car class attached to the grid widget in .kv
@@ -199,7 +273,7 @@ class Co(Widget):
     txt = StringProperty("start")
 
     def colorchange(self, instance, value):
-        print(value)
+        #print(value)
         self.c = value[0]
 
     def valuechange(self, instance, value):
@@ -235,11 +309,64 @@ class Lcd(BoxLayout):
         self.B = str(self.b)
         self.C = str(self.c)
 
+class ButtonLayout(BoxLayout):
+    boxy = ObjectProperty(None)
+    barcodes = ObjectProperty(None)
+
+
+
+class BarcodeButtonLayout(BoxLayout):
+    b1 = ObjectProperty(None)
+    b2 = ObjectProperty(None)
+    b3 = ObjectProperty(None)
+    b4 = ObjectProperty(None)
+
+    def __init__(self, **k):
+        super(BarcodeButtonLayout, self).__init__(**k)
+
+
+
 
 # button class for triangulating positions
-class triangulate(Button):
+class Triangulate(Button):
     pass
 
+
+class Barcode1(Button):
+    pass
+
+
+class Barcode2(Button):
+    pass
+
+
+class Barcode3(Button):
+    pass
+
+
+class Barcode4(Button):
+    pass
+
+
+class Cbar(Widget):
+    current = ObjectProperty(None)
+    id = StringProperty('black.png')
+    def bar1(self, instance):
+        self.id = 'Barcode1.png'
+
+    def bar2(self, instance):
+        self.id = 'Barcode2.png'
+
+    def bar3(self, instance):
+        self.id = 'Barcode3.png'
+
+    def bar4(self, instance):
+        self.id = 'Barcode4.png'
+
+
+class Tribox(BoxLayout):
+    tri = ObjectProperty(None)
+    curbar = ObjectProperty(None)
 
 # App class, run the app
 class RunApp(App):
