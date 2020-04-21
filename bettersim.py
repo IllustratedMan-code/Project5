@@ -20,11 +20,12 @@ from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.graphics import *
-from kivy.properties import ListProperty, NumericProperty, ObjectProperty, StringProperty
+from kivy.properties import ListProperty, NumericProperty, ObjectProperty, StringProperty, BooleanProperty
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.core.image import Image
 import behavior
+import math
 
 
 # base class that handles the placing of all widgets
@@ -61,6 +62,9 @@ class rootclass(GridLayout):
         self.blayout.barcodes.b2.bind(on_release=self.blayout.boxy.curbar.bar2)
         self.blayout.barcodes.b3.bind(on_release=self.blayout.boxy.curbar.bar3)
         self.blayout.barcodes.b4.bind(on_release=self.blayout.boxy.curbar.bar4)
+        self.blayout.boxy.curbar.bind(id=self.color.barcodes.bidupdate)
+        self.g.bind(home=self.color.barcodes.homeupdate)
+        self.color.barcodes.bind(found=self.g.pickupbox)
 
 
 
@@ -77,7 +81,7 @@ class grid(RelativeLayout):
     barcode = ListProperty(None)
     d = 0
     dcount = 0
-    speed = 1
+    speed = 4
     turns = 0
     listofboxes = []
     barcodes = []
@@ -85,6 +89,10 @@ class grid(RelativeLayout):
     bcount = 0
     ccount = []
     curbcode = ListProperty(None)
+    turns = 0
+    box = False
+    home = BooleanProperty(False)
+
 
 
 
@@ -139,11 +147,23 @@ class grid(RelativeLayout):
 
         # if car does not see a cube for a certain amount of time then turns
         if self.dcount > 15 * (1/abs(self.speed)):
-            self.ax = self.ax
-            self.ay = self.ay
-            self.car.angle -= 90
-            self.dcount = 0
-            self.turns += 1
+            #print(self.turns)
+            if self.turns in list(range(5)) + list(range(6, 10)) + list(range(11, 15)) + list(range(16, 19)) + list(range(20, 23)) + list(range(24, 28)) + list(range(29, 33)) + list(range(34, 37)) + list(range(38, 41)):
+                self.car.angle -= 90
+                self.dcount = 0
+                self.turns += 1
+                if self.turns == 40:
+                    self.turns = 0
+                    self.home = True
+
+            elif self.turns in [5, 10, 15, 19,23, 28, 33, 37]:
+                self.car.angle -= 0
+                self.dcount = -20*(1/self.speed)
+                self.turns += 1
+
+
+
+
         else:
             self.ax = self.ax + delta[0]
             self.ay = self.ay + delta[1]
@@ -155,57 +175,10 @@ class grid(RelativeLayout):
                 self.car.angle += -360
             elif self.car.angle <= -180:
                 self.car.angle += 360
-
-            self.d = behavior.distancesensor(
-                self.listofboxes, self.ax, self.ay, self.car.angle, self.barcodes)
-            if self.d is not None:
-                self.distance = self.d[0]
-
-                if self.d[1] is not None:
-                    self.col = self.d[1]
-                    #print(self.col)
-                    if self.col[0] == [1, 1, 1, 1]:
-                        self.wcount += 1
-                        self.bcount = 0
-                        if self.wcount > 6:
-                            self.ccount.append(1)
-                            self.wcount = 0
-                            print(len(self.ccount))
-                            if len(self.ccount) == 4:
-                                print("hehehehe")
-                                self.curbcode = self.ccount
+            self.home = False
+            self.sensors(self)
 
 
-
-                        #print(self.wcount)
-                    if self.col[0] == [0, 0, 0, 1]:
-                        self.bcount += 1
-                        self.wcount = 0
-                        if self.bcount > 6:
-                            self.ccount.append(0)
-                            self.bcount = 0
-                            print(len(self.ccount))
-                            if len(self.ccount) == 4:
-                                self.curbcode = self.ccount
-
-                        #print("bcount:{0}".format(self.bcount))
-
-
-
-                else:
-                    self.col = [[1, 0, 0, 1]]
-                    self.wcount = 0
-                    self.bcount = 0
-                    self.ccount = []
-                self.dcount = 0
-
-            else:
-                self.distance = -1000000000
-                self.col = [[0, 0, 1, 1]]
-                self.wcount = 0
-                self.bcount = 0
-                self.dcount += 1
-                self.ccount = []
 
     def resize(self, *a):
         self.ax = self.ax
@@ -214,26 +187,93 @@ class grid(RelativeLayout):
         self.car.x = self.size[0] * self.ax
         self.car.y = self.size[1] * self.ay
 
+    def sensors(self, *a):
+        self.d = behavior.distancesensor(
+            self.listofboxes, self.ax, self.ay, self.car.angle, self.barcodes)
+        if self.d is not None:
+            self.distance = self.d[0]
+            if self.d[1] is not None:
+                self.boxid = self.d[1][1]
+            if self.d[1] is not None:
+                self.col = self.d[1]
+                #print(self.col)
+                if self.col[0] == [1, 1, 1, 1]:
+                    self.wcount += 1
+                    self.bcount = 0
+                    if self.wcount > math.floor(6*1/self.speed):
+                        self.ccount.append(1)
+                        self.wcount = 0
+                        #print(len(self.ccount))
+                        if len(self.ccount) == 4:
+                            #print("hehehehe")
+                            self.curbcode = self.ccount
 
+                    #print(self.wcount)
+                if self.col[0] == [0, 0, 0, 1]:
+                    self.bcount += 1
+                    self.wcount = 0
+                    if self.bcount > math.floor(6*1/self.speed):
+                        self.ccount.append(0)
+                        self.bcount = 0
+                        #print(len(self.ccount))
+                        if len(self.ccount) == 4:
+                            self.curbcode = self.ccount
+
+                    #print("bcount:{0}".format(self.bcount))
+            else:
+                self.col = [[1, 0, 0, 1]]
+                self.wcount = 0
+                self.bcount = 0
+                self.ccount = []
+            self.dcount = 0
+
+        else:
+            self.distance = -1000000000
+            self.col = [[0, 0, 1, 1]]
+            self.wcount = 0
+            self.bcount = 0
+            self.dcount += 1
+            self.ccount = []
+
+    def pickupbox(self, instance, value):
+        if value == True:
+            self.add_widget(replacementbox(size_hint=[0.03, 0.03], pos_hint={'x':self.listofboxes[self.boxid][0], 'y':self.listofboxes[self.boxid][1]}), index=1)
+            self.barcodes[self.boxid] = 0
 class VisionBox(BoxLayout):
     col = ObjectProperty(None)
     barcodes = ObjectProperty(None)
 
 
 class Barcodereader(Widget):
-    id = StringProperty('black.png')
+    id = StringProperty('black0.png')
+    found = BooleanProperty(False)
+    bid = ""
+    aid = ""
 
     def idupdate(self, instance, value):
+        if self.found is False:
+            if value == [0, 1, 1, 1]:
+                self.id = 'Barcode1.png'
+            if value == [0, 1, 0, 1]:
+                self.id = 'Barcode2.png'
+            if value == [0, 0, 1, 1]:
+                self.id = 'Barcode3.png'
+            if value == [0, 1, 1, 0]:
+                self.id = 'Barcode4.png'
+            self.aid = self.id
+        if self.aid == self.bid:
+            self.found = True
+            self.id = "Green.png"
 
-        if value == [0, 1, 1, 1]:
-            self.id = 'Barcode1.png'
-        if value == [0, 1, 0, 1]:
-            self.id = 'Barcode2.png'
-        if value == [0, 0, 1, 1]:
-            self.id = 'Barcode3.png'
-        if value == [0, 1, 1, 0]:
-            self.id = 'Barcode4.png'
-            print(self.id)
+
+    def bidupdate(self, instance, value):
+        self.bid = value
+
+    def homeupdate(self, instance, value):
+        if value is True:
+            self.id = 'black0.png'
+            self.found = False
+
 
 
 
@@ -244,6 +284,8 @@ class box(Widget):
     barcode = ListProperty(None)
     pass
 
+class replacementbox(Widget):
+    pass
 # class for the "homes" that the robot uses to triangulate its position
 class home(Widget):
     pass
@@ -273,7 +315,7 @@ class Co(Widget):
     txt = StringProperty("start")
 
     def colorchange(self, instance, value):
-        #print(value)
+        #print("this is the value{0}".format(value))
         self.c = value[0]
 
     def valuechange(self, instance, value):

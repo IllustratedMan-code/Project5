@@ -38,7 +38,7 @@
   Widget:
     canvas:
       Color:
-        rgba: 1, .9, 1, 1
+        rgba: 0.5, 0.2, 0.3, 1
       Rectangle:
         pos:self.pos
         size:self.size
@@ -163,7 +163,13 @@
       size: self.size
       pos: self.pos
 
-
+<replacementbox>:
+  canvas:
+    Color:
+      rgba: 1, .5, 0, 1
+    Rectangle:
+      size: self.size
+      pos: self.pos
 
 <box>:
   canvas.before:

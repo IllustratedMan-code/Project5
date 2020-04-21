@@ -54,28 +54,31 @@ def colorsensor(boxlist, xy, barcodes):
                 k = 0
     r = 0
     for i in range(len(boxlist)):
+        if barcodes[i] != 0:
+            if boxorientation[i] == 0:
+                r = 0
+                for a in barcodes[i]:
+                    barx = boxlist[i][0]
+                    bary = boxlist[i][1] + r*(0.03/4)
+                    barw = boxlist[i][0] + 0.03/5
+                    barl = boxlist[i][1] + (r+1)*(0.03/4)
+                    if barx <= xy[0] <= barw and bary <= xy[1] <= barl:
+                        #print(i)
+                        return [a, i]
+                    r += 1
 
-        if boxorientation[i] == 0:
-            r = 0
-            for a in barcodes[i]:
-                barx = boxlist[i][0]
-                bary = boxlist[i][1] + r*(0.03/4)
-                barw = boxlist[i][0] + 0.03/5
-                barl = boxlist[i][1] + (r+1)*(0.03/4)
-                if barx <= xy[0] <= barw and bary <= xy[1] <= barl:
-                    return [a]
-                r += 1
+            else:
+                r = 3
+                for a in barcodes[i]:
+                    barx = boxlist[i][0] + 0.03
+                    bary = boxlist[i][1] + r*(0.03/4)
+                    barw = boxlist[i][0] + 0.03 - 0.03/5
+                    barl = boxlist[i][1] + (r+1)*(0.03/4)
+                    if barw <= xy[0] <= barx and bary <= xy[1] <= barl:
+                        #print(i)
+                        return [a, i]
 
-        else:
-            r = 3
-            for a in barcodes[i]:
-                barx = boxlist[i][0] + 0.03
-                bary = boxlist[i][1] + r*(0.03/4)
-                barw = boxlist[i][0] + 0.03 - 0.03/5
-                barl = boxlist[i][1] + (r+1)*(0.03/4)
-                if barw <= xy[0] <= barx and bary <= xy[1] <= barl:
-                    return [a]
-                r -= 1
+                    r -= 1
 
 
 def createbarcode():
@@ -169,5 +172,5 @@ def distancesensor(boxlist, xp, yp, angle, barcodes):
 
         xy = intersections[distances.index(min(distances))]
         color = colorsensor(boxlist, xy, barcodes)
-        #print(color)
+        #print("this is the color{0}".format(color))
         return(min(distances), color, xy)
