@@ -40,6 +40,67 @@ def arrayofboxes(alist, xp, yp):
 
             colorlist.append(color)'''
 
+def createnodematrix(size):
+    nodematrix = []
+    tempmatrix = []
+    for i in range(size[0]):
+        for a in range(size[1]):
+            tempmatrix.append(1)
+        nodematrix.append(tempmatrix)
+        tempmatrix = []
+    return(nodematrix)
+
+def cnode(currentnode, angle):
+    if angle == 0:
+        currentnode[0] = currentnode[0] + 1
+    elif angle == -90:
+        currentnode[1] = currentnode[1] + 1
+    elif angle == 180:
+        currentnode[0] = currentnode[0] - 1
+    elif angle == 90:
+        currentnode[1] = currentnode[1] - 1
+    return(currentnode)
+
+def nodesense(currentnode, nodematrix):
+    seenodes = []
+    if currentnode[0] + 1 < len(nodematrix):
+        seenodes.append([currentnode[0] + 1, currentnode[1]])
+
+    if currentnode[0] - 1 >= 0:
+        seenodes.append([currentnode[0] - 1, currentnode[1]])
+
+    if currentnode[1] + 1 < len(nodematrix[currentnode[0]]):
+        seenodes.append([currentnode[0], currentnode[1]+1])
+
+    if currentnode[1]-1 >= 0:
+        seenodes.append([currentnode[0], currentnode[1]-1])
+
+    return(seenodes)
+
+
+def nodepath(target, currentnode, nodematrix):
+    if target == currentnode:
+        return(currentnode)
+    pathlist = []
+    newpaths = []
+    seenodes = nodesense(currentnode, nodematrix)
+    for i in seenodes:
+        pathlist.append([currentnode, i])
+    foundpath = False
+
+    while foundpath is False:
+        for path in pathlist:
+
+            seenodes = nodesense(path[len(path)-1], nodematrix)
+            for node in seenodes:
+                if node not in path:
+                    newpaths.append(path + [node])
+                    if node == target:
+                        foundpath = False
+                        return(path + [node])
+
+        pathlist = newpaths
+        newpaths = []
 
 def colorsensor(boxlist, xy, barcodes):
     boxorientation = []

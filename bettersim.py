@@ -92,7 +92,9 @@ class grid(RelativeLayout):
     turns = 0
     box = False
     home = BooleanProperty(False)
-
+    nodearray = [1, 1]
+    currentnode = [0, 0]
+    seennodes = []
 
 
 
@@ -100,6 +102,8 @@ class grid(RelativeLayout):
         super(grid, self).__init__(**k)
         width = 4
         length = 2
+        self.nodearray[0] = length + 1
+        self.nodearray[1] = width + 1
         # creates the "facility" with box widgets and path widgets according
         # to the width and
         for w in range(width):
@@ -126,7 +130,8 @@ class grid(RelativeLayout):
                                  pos_hint={'x': 0.27 + w * 0.1, 'y': 0.14 - 0.001}), index=1)
             self.add_widget(path(size_hint=(0.03, (0.1) * (length * 2) - 0.05 + 0.001),
                                  pos_hint={'x': 0.27 + width * 0.1, 'y': 0.14 - 0.001}), index=1)
-        print(self.listofboxes[1])
+
+        #print(self.listofboxes[1])
         self.add_widget(home(size_hint=(0.03, 0.03), pos_hint={
                         'x': .27, 'y': .1 - 0.009}), index=1)
         self.add_widget(home(size_hint=(0.03, 0.03), pos_hint={
@@ -135,7 +140,10 @@ class grid(RelativeLayout):
                         'x': .27 + width *0.1, 'y': .139 + (0.1) * (length * 2) - 0.05 + 0.02}), index=1)
         self.add_widget(home(size_hint=(0.03, 0.03), pos_hint={
                         'x': .27 , 'y': .139 + (0.1) * (length * 2) - 0.05 + 0.02}), index=1)
+        print(self.nodearray[0])
+        self.nodearray = behavior.createnodematrix(self.nodearray)
 
+        #print(self.nodearray)
         # optional box in the path of the robot, must uncomment both lines to work
         #self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': 0.3, 'y': 0.31-0.009}, bc = 0), index=1)
         #self.listofboxes.append([0.3, 0.31-0.009])
@@ -149,6 +157,11 @@ class grid(RelativeLayout):
         if self.dcount > 15 * (1/abs(self.speed)):
             #print(self.turns)
             if self.turns in list(range(5)) + list(range(6, 10)) + list(range(11, 15)) + list(range(16, 19)) + list(range(20, 23)) + list(range(24, 28)) + list(range(29, 33)) + list(range(34, 37)) + list(range(38, 41)):
+
+
+                self.currentnode = behavior.cnode(self.currentnode, self.car.angle)
+
+                print(behavior.nodepath(self.currentnode, [0, 0], self.nodearray))
                 self.car.angle -= 90
                 self.dcount = 0
                 self.turns += 1
@@ -157,6 +170,7 @@ class grid(RelativeLayout):
                     self.home = True
 
             elif self.turns in [5, 10, 15, 19,23, 28, 33, 37]:
+                self.currentnode = behavior.cnode(self.currentnode, self.car.angle)
                 self.car.angle -= 0
                 self.dcount = -20*(1/self.speed)
                 self.turns += 1
