@@ -27,6 +27,7 @@ from kivy.core.image import Image
 import behavior
 import math
 import time
+import threading
 
 # base class that handles the placing of all widgets
 class rootclass(GridLayout):
@@ -81,7 +82,7 @@ class grid(RelativeLayout):
     barcode = ListProperty(None)
     d = 0
     dcount = 0
-    speed = 4
+    speed = 1
     turns = 0
     listofboxes = []
     barcodes = []
@@ -95,10 +96,14 @@ class grid(RelativeLayout):
     nodearray = [1, 1]
     currentnode = [0, 0]
     seennodes = []
-    mode = False
+    mode = 0
     nodecount = 0
-
-
+    xcount = 0
+    ycount = 0
+    scount = 0
+    on = False
+    initialdistance = [0, 0]
+    i = 0
 
     def __init__(self, **k):
         super(grid, self).__init__(**k)
@@ -110,19 +115,28 @@ class grid(RelativeLayout):
         # to the width and
         for w in range(width):
             for l in range(length):
+                for i in range(3):
+                    self.add_widget(home(size_hint=(.03, .03), pos_hint={
+                                    'x': 0.3 + 0.5 * .04 + w * 2 * 0.05, 'y': 0.155 + i* .04 + l * 4 * 0.05}, alpha=1), index=(1))
+                    self.listofboxes.append(
+                            [0.3 + 0.5* 0.04 + w * 2 * 0.05, 0.155 + i * 0.04 + l * 4 * 0.05])
+                    self.barcodes.append(0)
                 for i in range(2):
                     for a in range(4):
                         bar = behavior.createbarcode()
+
                         if i == 0:
                             self.add_widget(box(size_hint=(.03, .03), pos_hint={
                                             'x': 0.3 + i * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}, angle=0, barcode=bar), index=1)
                         else:
                             self.add_widget(box(size_hint=(.03, .03), pos_hint={
                                             'x': 0.3 + i * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}, angle=180, barcode=bar), index=1)
+
                         self.listofboxes.append(
                             [0.3 + i * 0.04 + w * 2 * 0.05, 0.14 + a * 0.04 + l * 4 * 0.05])
                         self.barcodes.append(bar)
-
+                        self.add_widget(home(size_hint=(.03, .03), pos_hint={
+                                        'x': 0.3 + 0.5 * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}), index=3)
                 self.add_widget(path(size_hint=((0.13 - 0.03) * width + 0.03, 0.048), pos_hint={
                                 'x': 0.3 - 0.03, 'y': 0.11 + (0.1) * 2 * (l) - 0.0187}), index=1)
                 self.add_widget(path(size_hint=((0.13 - 0.03) * width + 0.03, 0.048), pos_hint={
@@ -153,10 +167,12 @@ class grid(RelativeLayout):
     # car controlling function
     def update(self, *a):
         #print(self.col)
-        if self.mode is True:
+        if self.mode is 2:
             self.homeupdate()
-        else:
+        elif self.mode is 1:
             self.normalupdate()
+        else:
+            self.initialupdate()
 
     def normalupdate(self, *a):
         self.time += 0.01
@@ -261,6 +277,62 @@ class grid(RelativeLayout):
             self.dcount += 1
             self.ccount = []
 
+    def initialupdate(self, *a):
+        delta = behavior.Drive(1*self.speed, self.car.angle)
+        self.ax = self.ax + delta[0]
+        self.ay = self.ay + delta[1]
+        self.car.center_x = self.size[0] * self.ax
+        self.car.center_y = self.size[1] * self.ay
+
+        self.d = behavior.distancesensor(
+            self.listofboxes, self.ax, self.ay, self.car.angle, self.barcodes)
+        if self.d is None:
+            self.scount += 1
+            #print(self.scount)
+        else:
+            if self.scount > 0:
+                if self.on is False:
+                    self.xcount = self.scount
+                    print(int(self.xcount/2))
+                    for i in range(int(self.xcount/2)):
+                        #print('thread')
+                        x = threading.Thread(target=self.Threader)
+                        x.start()
+                        self.initialdistance[0] -= 1
+                    self.car.angle = -90
+                    self.scount = -int(self.xcount/2)
+                    self.on = True
+
+                else:
+                    self.ycount = self.scount
+
+                    #Clock.schedule_interval(self.driver(-self.speed), )
+                    self.car.angle = -90
+                    self.scount = -int(self.ycount/2)
+                    self.on = True
+            elif self.on is True:
+                self.initialdistance[1] += 1
+            elif self.on is False:
+                self.initialdistance[0] += 1
+            self.scount = 0
+            print(self.initialdistance)
+
+    def driver(self, velocity, *a):
+        delta = behavior.Drive(velocity, self.car.angle)
+        self.ax = self.ax + delta[0]
+        self.ay = self.ay + delta[1]
+        self.car.center_x = self.size[0] * self.ax
+        self.car.center_y = self.size[1] * self.ay
+
+    def driveback(self, *a):
+        self.driver(-1*self.speed)
+
+    def Threader(self):
+        Clock.schedule_once(self.driveback)
+        time.sleep(1)
+
+
+
     def pickupbox(self, instance, value):
         if value == True:
 
@@ -282,7 +354,10 @@ class grid(RelativeLayout):
 
     def updatemode(self, instance, value):
 
-        self.mode = value
+        if value is True:
+            self.mode = 2
+        else:
+            self.mode = 1
 
 class VisionBox(BoxLayout):
     col = ObjectProperty(None)
@@ -333,7 +408,7 @@ class replacementbox(Widget):
     pass
 # class for the "homes" that the robot uses to triangulate its position
 class home(Widget):
-    pass
+    alpha = NumericProperty(0)
 
 
 # empty widget filled with path rectangle in .kv

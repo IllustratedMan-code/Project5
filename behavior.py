@@ -50,6 +50,7 @@ def createnodematrix(size):
         tempmatrix = []
     return(nodematrix)
 
+
 def cnode(currentnode, angle):
     if angle == 0:
         currentnode[0] = currentnode[0] + 1
@@ -60,6 +61,7 @@ def cnode(currentnode, angle):
     elif angle == 90:
         currentnode[1] = currentnode[1] - 1
     return(currentnode)
+
 
 def nodesense(currentnode, nodematrix):
     seenodes = []

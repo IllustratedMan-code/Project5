@@ -3,7 +3,7 @@
     PushMatrix
     Rotate:
       axis: 0, 0, 1
-      angle: self.angle
+      angle: self.angle + 90
       origin: self.center
 
 
@@ -44,7 +44,7 @@
         size:self.size
   Car:
     id: vroom
-    size_hint: 0.015, 0.04
+    size_hint: 0.03, 0.03
 
 <Lcd>:
   BoxLayout:
@@ -158,7 +158,7 @@
 <home>:
   canvas:
     Color:
-      rgba: 1, 0, 1, 1
+      rgba: 1, 0, 1, self.alpha
     Rectangle:
       size: self.size
       pos: self.pos
