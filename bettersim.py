@@ -66,6 +66,8 @@ class rootclass(GridLayout):
         self.blayout.boxy.curbar.bind(id=self.color.barcodes.bidupdate)
         self.g.bind(home=self.color.barcodes.homeupdate)
         self.color.barcodes.bind(found=self.g.pickupbox)
+        self.color.barcodes.bind(found=self.g.homepath)
+        self.color.barcodes.bind(found=self.g.updatemode)
         #self.color.barcodes.bind(found=self.g.updatemode)
 
 
@@ -110,9 +112,15 @@ class grid(RelativeLayout):
     xbool = True
     first = True
     second = False
+    node = [0, 0]
+    gp = 0
+    distancefromnode = [0, 0]
+    finaldistance = [0, 0]
+    permpath = [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0], [1, 0], [1, 1], [1, 2], [0, 2], [0, 1], [1, 1], [1, 2], [1, 3], [0, 3], [0, 2], [1, 2], [1, 3], [1, 4], [0, 4], [0, 3], [1, 3], [2, 3], [2, 4], [1, 4], [1, 3], [1, 2], [2, 2], [2, 3], [1, 3], [1, 2], [1, 1], [2, 1], [2, 2], [1, 2], [2, 1], [1, 1], [1, 0], [2, 0], [2, 1], [1, 1], [0, 1], [0, 0]]
+    path = list.copy(permpath)
     def __init__(self, **k):
         super(grid, self).__init__(**k)
-        width = 5
+        width = 4
         length = 2
         self.nodearray[0] = length + 1
         self.nodearray[1] = width + 1
@@ -139,7 +147,7 @@ class grid(RelativeLayout):
                                         'x': 0.3 + 0.5 * .04 + w * 2 * 0.05, 'y': 0.14 + a * .04 + l * 4 * 0.05}), index=3)
 
 
-                    self.barcodes.append(0)
+
                 self.add_widget(path(size_hint=((0.13 - 0.03) * width + 0.03, 0.048), pos_hint={
                                 'x': 0.3 - 0.03, 'y': 0.11 + (0.1) * 2 * (l) - 0.0187}), index=1)
                 self.add_widget(path(size_hint=((0.13 - 0.03) * width + 0.03, 0.048), pos_hint={
@@ -169,11 +177,11 @@ class grid(RelativeLayout):
                         'x': .27 , 'y': .139 + (0.1) * (length * 2) - 0.05 + 0.02}), index=1)
         #print(self.nodearray[0])
         self.nodearray = behavior.createnodematrix(self.nodearray)
-        print(self.barcodes)
+        #print(self.barcodes)
         #print(self.listofboxes)
         #print(self.nodearray)
         # optional box in the path of the robot, must uncomment both lines to work
-        #self.add_widget(box(size_hint=(0.03, 0.03), pos_hint={'x': 0.3, 'y': 0.31-0.009}, bc = 0), index=1)
+        self.add_widget(home(size_hint=(0.03, 0.03), pos_hint={'x': 0.5, 'y': 0.31-0.009}, alpha = 1), index=1)
         #self.listofboxes.append([0.3, 0.31-0.009])
 
     # car controlling function
@@ -189,15 +197,69 @@ class grid(RelativeLayout):
             self.initialupdate()
 
     def normalupdate(self, *a):
+        self.movepath()
+
+    def movepath(self, *a):
+        self.driver(self.speed, self.car.angle)
+        self.home = False
+        #print("final{0}".format(self.finaldistance))
+        #path = [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0], [1, 0], [1, 1], [1, 2], [1, 3]]
+        self.pathvector(self.currentnode, self.path)
+        #print(self.distancefromnode)
+        if abs(self.distancefromnode[0]) >= self.finaldistance[0] or abs(self.distancefromnode[1]) >= self.finaldistance[1]:
+            del self.path[0]
+            self.currentnode = behavior.cnode(self.currentnode, self.car.angle)
+            self.distancefromnode = [0, 0]
+            print(self.path)
+            print(self.permpath)
+            print(self.currentnode)
+            if len(self.path) == 2:
+                self.home = True
+                self.path = list.copy(self.permpath)
+        self.sensors()
+
+
+    def pathvector(self, currentnode, path, *a):
+        #print("current {0}".format(currentnode))
+        if path.index(currentnode) + 1 in range(len(path)):
+            next = path[path.index(currentnode) + 1]
+            x = next[1] - currentnode[1]
+            y = next[0] - currentnode[0]
+        else:
+            x = 0
+            y = 0
+        if x > 0:
+            if self.car.angle == -90:
+                self.distancefromnode[1] += 1
+
+            self.car.angle = -90
+        elif x < 0:
+            if self.car.angle == 90:
+                self.distancefromnode[1] -= 1
+            self.car.angle = 90
+        elif y > 0:
+            if self.car.angle == 0:
+                self.distancefromnode[0] += 1
+            self.car.angle = 0
+        elif y < 0:
+            if self.car.angle == 180:
+                self.distancefromnode[0] -= 1
+            self.car.angle = 180
+        else:
+            self.speed = 0
+
+
+
+    def anormalupdate(self, *a):
         self.time += 0.01
         delta = behavior.Drive(self.speed, self.car.angle)
 
         #print(self.dcount)
         # if car does not see a cube for a certain amount of time then turns
         #print(self.car.angle)
-
+        #print
         if self.car.angle == 0 or self.car.angle == 180:
-            #print("x")
+            #print(self.dcount)
             if self.dcount > int(self.xcount/2):
                 self.defaultturn()
 
@@ -251,7 +313,7 @@ class grid(RelativeLayout):
     def sensors(self, *a):
         self.d = behavior.distancesensor(
             self.listofboxes, self.ax, self.ay, self.car.angle, self.barcodes)
-        print(self.d)
+        #print(self.d)
         if self.d is not None:
             self.distance = self.d[0]
             if self.d[1] is not None:
@@ -266,7 +328,7 @@ class grid(RelativeLayout):
                     self.bcount = 0
 
                     #print(self.ccount)
-                    if self.wcount > 6*1/self.speed:
+                    if self.wcount > 5*1/self.speed:
                         self.ccount.append(1)
                         self.wcount = 0
                         #print(len(self.ccount))
@@ -278,10 +340,12 @@ class grid(RelativeLayout):
                 if self.col[0] == [0, 0, 0, 1]:
                     self.bcount += 1
                     self.wcount = 0
-                    if self.bcount > 6*1/self.speed:
+                    #print("this is the bcount{0}".format(self.bcount))
+                    if self.bcount > 5*1/self.speed:
                         self.ccount.append(0)
                         self.bcount = 0
-                        #print(len(self.ccount))
+                        #if len(self.ccount) > 2:
+                            #print(len(self.ccount))
                         if len(self.ccount) == 4:
                             self.curbcode = self.ccount
 
@@ -352,8 +416,10 @@ class grid(RelativeLayout):
                         self.initialdistance[1] += int(self.ycount)
                         self.car.angle = -90
                         self.scount = -int(self.ycount/2)
-                        self.on = True
+                        #self.finaldistance = self.initialdistance
+                        self.on = False
                         self.end = True
+
                 elif self.on is True:
                     self.initialdistance[1] += 1
                 elif self.on is False:
@@ -365,11 +431,12 @@ class grid(RelativeLayout):
                     self.t = True
             #print(self.initialdistance)
         else:
+            print(self.finaldistance)
             self.driver(-1* self.speed)
             if self.xbool is True:
                 #print(self.initialdistance)
                 self.initialdistance[1] -= 1
-
+                self.finaldistance[1] += 1
                 if self.initialdistance[1] == 0:
                     self.xbool = False
                     self.car.angle = 0
@@ -378,6 +445,7 @@ class grid(RelativeLayout):
                 #print(self.initialdistance)
 
                 self.initialdistance[0] -= 1
+                self.finaldistance[0] += 1
                 if self.initialdistance[0] == 0:
                     self.mode = 1
 
@@ -386,6 +454,8 @@ class grid(RelativeLayout):
         delta = behavior.Drive(velocity, self.car.angle)
         self.ax = self.ax + delta[0]
         self.ay = self.ay + delta[1]
+        print(delta)
+        self.velocity = delta
         self.car.center_x = self.size[0] * self.ax
         self.car.center_y = self.size[1] * self.ay
 
@@ -400,6 +470,7 @@ class grid(RelativeLayout):
 
     def defaultturn(self, *a):
         self.nodecount = 0
+        #print(self.turns)
         if self.turns in list(range(5)) + list(range(6, 10)) + list(range(11, 15)) + list(range(16, 19)) + list(range(20, 23)) + list(range(24, 28)) + list(range(29, 33)) + list(range(34, 37)) + list(range(38, 41)):
 
             self.currentnode = behavior.cnode(self.currentnode, self.car.angle)
@@ -410,7 +481,9 @@ class grid(RelativeLayout):
             self.turns += 1
 
             if self.turns == 40:
+                self.dcount += -1
                 self.turns = 0
+
                 self.home = True
 
 
@@ -427,16 +500,41 @@ class grid(RelativeLayout):
             self.barcodes[self.boxid] = 0
             #time.sleep(0.5)
 
-    def homeupdate(self, *a):
-        print(self.nodecount)
-        if self.nodecount > 0:
-            delta = behavior.Drive(-1*self.speed, self.car.angle)
-            self.ax = self.ax + delta[0]
-            self.ay = self.ay + delta[1]
+    def homepath(self, *a):
+        self.path = behavior.nodepath([0, 0], self.currentnode, self.nodearray)
+        print(self.nodearray)
 
-            self.car.center_x = self.size[0] * self.ax
-            self.car.center_y = self.size[1] * self.ay
-            self.nodecount -= 1
+    def homeupdate(self, *a):
+        self.currentnode == self.path
+        #print(self.currentnode)
+        #print(self.path)
+        if [self.currentnode] == self.path:
+            self.driver(-self.speed, self.car.angle)
+            self.distancefromnode[0] -= 1
+            print(self.distancefromnode)
+            if self.distancefromnode[0] == 0:
+                self.home = True
+                self.path =list.copy(self.permpath)
+                self.mode = 1
+        else:
+            self.driver(self.speed, self.car.angle)
+            self.pathvector(self.currentnode, self.path)
+            #print(self.currentnode)
+            #print("ha{0}".format(self.path))
+            if abs(self.distancefromnode[0]) >= self.finaldistance[0] or abs(self.distancefromnode[1]) >= self.finaldistance[1]:
+
+                del self.path[0]
+                self.currentnode = behavior.cnode(self.currentnode, self.car.angle)
+                self.distancefromnode = [0, 0]
+                if self.currentnode == [0, 0]:
+                    self.home = True
+                    self.path = list.copy(self.permpath)
+                    self.mode = 1
+
+                #print(self.path)
+                #print(self.permpath)
+                #print(self.currentnode)
+
 
 
     def updatemode(self, instance, value):

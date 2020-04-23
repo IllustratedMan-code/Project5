@@ -3,6 +3,19 @@ import random
 
 
 def Drive(direction, angle):
+    '''#if angle == 0:
+        x = 0
+        y = 0.001 * direction
+    #elif angle == 180:
+        x = 0
+        y = -0.001 * direction
+    #elif angle == -90:
+        x = 0.001 * direction
+        y = 0
+    #elif angle == 90:
+        x = -0.001 * direction
+        y = 0
+    #else:'''
     x = direction * math.sin(((-angle)/180)*math.pi)*0.001
     y = direction * math.cos(((-angle)/180)*math.pi)*0.001
 
@@ -80,9 +93,12 @@ def nodesense(currentnode, nodematrix):
     return(seenodes)
 
 
-def nodepath(target, currentnode, nodematrix):
+def nodepath(target, currentnode, nodematrix, badnodes = None):
+    if badnodes is not None:
+        for i in badnodes:
+            nodematrix[i] = 0
     if target == currentnode:
-        return(currentnode)
+        return([currentnode])
     pathlist = []
     newpaths = []
     seenodes = nodesense(currentnode, nodematrix)
@@ -95,7 +111,7 @@ def nodepath(target, currentnode, nodematrix):
 
             seenodes = nodesense(path[len(path)-1], nodematrix)
             for node in seenodes:
-                if node not in path:
+                if node not in path and nodematrix[node[0]][node[1]] == 1:
                     newpaths.append(path + [node])
                     if node == target:
                         foundpath = False
