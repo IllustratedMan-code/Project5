@@ -26,7 +26,7 @@ from kivy.core.window import Window
 from kivy.core.image import Image
 import behavior
 import math
-
+import time
 
 # base class that handles the placing of all widgets
 class rootclass(GridLayout):
@@ -50,7 +50,7 @@ class rootclass(GridLayout):
         self.add_widget(self.blayout)
         self.up = self.g.update
         # update schedule for the widgets
-        Clock.schedule_interval(self.up, 1 / (60))
+        Clock.schedule_interval(self.up, 1 / (900))
         self.g.bind(size=self.g.resize)
         self.g.bind(size=self.lcd.upsize)
         self.g.bind(col=self.color.col.colorchange)
@@ -65,7 +65,7 @@ class rootclass(GridLayout):
         self.blayout.boxy.curbar.bind(id=self.color.barcodes.bidupdate)
         self.g.bind(home=self.color.barcodes.homeupdate)
         self.color.barcodes.bind(found=self.g.pickupbox)
-        self.color.barcodes.bind(found=self.g.updatemode)
+        #self.color.barcodes.bind(found=self.g.updatemode)
 
 
 
@@ -97,6 +97,7 @@ class grid(RelativeLayout):
     seennodes = []
     mode = False
     nodecount = 0
+
 
 
     def __init__(self, **k):
@@ -141,7 +142,7 @@ class grid(RelativeLayout):
                         'x': .27 + width *0.1, 'y': .139 + (0.1) * (length * 2) - 0.05 + 0.02}), index=1)
         self.add_widget(home(size_hint=(0.03, 0.03), pos_hint={
                         'x': .27 , 'y': .139 + (0.1) * (length * 2) - 0.05 + 0.02}), index=1)
-        print(self.nodearray[0])
+        #print(self.nodearray[0])
         self.nodearray = behavior.createnodematrix(self.nodearray)
 
         #print(self.nodearray)
@@ -151,7 +152,7 @@ class grid(RelativeLayout):
 
     # car controlling function
     def update(self, *a):
-
+        #print(self.col)
         if self.mode is True:
             self.homeupdate()
         else:
@@ -160,18 +161,18 @@ class grid(RelativeLayout):
     def normalupdate(self, *a):
         self.time += 0.01
         delta = behavior.Drive(self.speed, self.car.angle)
-        self.nodecount += 1
-        print(self.dcount)
+
+        #print(self.dcount)
         # if car does not see a cube for a certain amount of time then turns
         if self.dcount > 15 * (1/abs(self.speed)):
-            #print(self.nodecount)
+            print(self.nodecount)
             self.nodecount = 0
             if self.turns in list(range(5)) + list(range(6, 10)) + list(range(11, 15)) + list(range(16, 19)) + list(range(20, 23)) + list(range(24, 28)) + list(range(29, 33)) + list(range(34, 37)) + list(range(38, 41)):
 
 
                 self.currentnode = behavior.cnode(self.currentnode, self.car.angle)
 
-                print(behavior.nodepath(self.currentnode, [0, 0], self.nodearray))
+                #print(behavior.nodepath(self.currentnode, [0, 0], self.nodearray))
                 self.car.angle -= 90
                 self.dcount = 0
                 self.turns += 1
@@ -184,7 +185,7 @@ class grid(RelativeLayout):
             elif self.turns in [5, 10, 15, 19,23, 28, 33, 37]:
                 self.currentnode = behavior.cnode(self.currentnode, self.car.angle)
                 self.car.angle -= 0
-                self.dcount = -20*(1/self.speed)
+                self.dcount = -int(20*(1/self.speed))
                 self.turns += 1
 
 
@@ -193,6 +194,7 @@ class grid(RelativeLayout):
         else:
             self.ax = self.ax + delta[0]
             self.ay = self.ay + delta[1]
+            self.nodecount += 1
 
             self.car.center_x = self.size[0] * self.ax
             self.car.center_y = self.size[1] * self.ay
@@ -261,13 +263,25 @@ class grid(RelativeLayout):
 
     def pickupbox(self, instance, value):
         if value == True:
+
             self.add_widget(replacementbox(size_hint=[0.03, 0.03], pos_hint={'x':self.listofboxes[self.boxid][0], 'y':self.listofboxes[self.boxid][1]}), index=1)
             self.barcodes[self.boxid] = 0
+            #time.sleep(0.5)
 
     def homeupdate(self, *a):
-        print(self.dcount)
+        print(self.nodecount)
+        if self.nodecount > 0:
+            delta = behavior.Drive(-1*self.speed, self.car.angle)
+            self.ax = self.ax + delta[0]
+            self.ay = self.ay + delta[1]
+
+            self.car.center_x = self.size[0] * self.ax
+            self.car.center_y = self.size[1] * self.ay
+            self.nodecount -= 1
+
 
     def updatemode(self, instance, value):
+
         self.mode = value
 
 class VisionBox(BoxLayout):
