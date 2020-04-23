@@ -118,6 +118,7 @@ def colorsensor(boxlist, xy, barcodes):
     r = 0
     for i in range(len(boxlist)):
         if barcodes[i] != 0:
+            #print(barcodes[i])
             if boxorientation[i] == 0:
                 r = 0
                 for a in barcodes[i]:
