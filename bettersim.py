@@ -48,9 +48,9 @@ class rootclass(GridLayout):
         # adds the triangulate button
         self.blayout = ButtonLayout()
         self.add_widget(self.blayout)
-
+        self.up = self.g.update
         # update schedule for the widgets
-        Clock.schedule_interval(self.g.update, 1 / (60))
+        Clock.schedule_interval(self.up, 1 / (60))
         self.g.bind(size=self.g.resize)
         self.g.bind(size=self.lcd.upsize)
         self.g.bind(col=self.color.col.colorchange)
@@ -65,7 +65,7 @@ class rootclass(GridLayout):
         self.blayout.boxy.curbar.bind(id=self.color.barcodes.bidupdate)
         self.g.bind(home=self.color.barcodes.homeupdate)
         self.color.barcodes.bind(found=self.g.pickupbox)
-
+        self.color.barcodes.bind(found=self.g.updatemode)
 
 
 
@@ -95,7 +95,8 @@ class grid(RelativeLayout):
     nodearray = [1, 1]
     currentnode = [0, 0]
     seennodes = []
-
+    mode = False
+    nodecount = 0
 
 
     def __init__(self, **k):
@@ -150,12 +151,21 @@ class grid(RelativeLayout):
 
     # car controlling function
     def update(self, *a):
+
+        if self.mode is True:
+            self.homeupdate()
+        else:
+            self.normalupdate()
+
+    def normalupdate(self, *a):
         self.time += 0.01
         delta = behavior.Drive(self.speed, self.car.angle)
-
+        self.nodecount += 1
+        print(self.dcount)
         # if car does not see a cube for a certain amount of time then turns
         if self.dcount > 15 * (1/abs(self.speed)):
-            #print(self.turns)
+            #print(self.nodecount)
+            self.nodecount = 0
             if self.turns in list(range(5)) + list(range(6, 10)) + list(range(11, 15)) + list(range(16, 19)) + list(range(20, 23)) + list(range(24, 28)) + list(range(29, 33)) + list(range(34, 37)) + list(range(38, 41)):
 
 
@@ -165,9 +175,11 @@ class grid(RelativeLayout):
                 self.car.angle -= 90
                 self.dcount = 0
                 self.turns += 1
+
                 if self.turns == 40:
                     self.turns = 0
                     self.home = True
+
 
             elif self.turns in [5, 10, 15, 19,23, 28, 33, 37]:
                 self.currentnode = behavior.cnode(self.currentnode, self.car.angle)
@@ -191,8 +203,6 @@ class grid(RelativeLayout):
                 self.car.angle += 360
             self.home = False
             self.sensors(self)
-
-
 
     def resize(self, *a):
         self.ax = self.ax
@@ -253,6 +263,13 @@ class grid(RelativeLayout):
         if value == True:
             self.add_widget(replacementbox(size_hint=[0.03, 0.03], pos_hint={'x':self.listofboxes[self.boxid][0], 'y':self.listofboxes[self.boxid][1]}), index=1)
             self.barcodes[self.boxid] = 0
+
+    def homeupdate(self, *a):
+        print(self.dcount)
+
+    def updatemode(self, instance, value):
+        self.mode = value
+
 class VisionBox(BoxLayout):
     col = ObjectProperty(None)
     barcodes = ObjectProperty(None)
