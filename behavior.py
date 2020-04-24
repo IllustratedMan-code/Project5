@@ -94,16 +94,22 @@ def nodesense(currentnode, nodematrix):
 
 
 def nodepath(target, currentnode, nodematrix, badnodes = None):
-    if badnodes is not None:
-        for i in badnodes:
-            nodematrix[i] = 0
+
+    badconnections = []
+
+    for i in badnodes:
+        badconnections.append(i)
+        badconnections.append([i[1], i[0]])
+
+    print(badconnections)
     if target == currentnode:
         return([currentnode])
     pathlist = []
     newpaths = []
     seenodes = nodesense(currentnode, nodematrix)
-    for i in seenodes:
-        pathlist.append([currentnode, i])
+    pathlist.append([currentnode])
+    #for i in seenodes:
+    #    pathlist.append([currentnode, i])
     foundpath = False
 
     while foundpath is False:
@@ -112,10 +118,14 @@ def nodepath(target, currentnode, nodematrix, badnodes = None):
             seenodes = nodesense(path[len(path)-1], nodematrix)
             for node in seenodes:
                 if node not in path and nodematrix[node[0]][node[1]] == 1:
-                    newpaths.append(path + [node])
-                    if node == target:
-                        foundpath = False
-                        return(path + [node])
+                    #print(path[len(path)-1])
+                    #print(node)
+                    if [path[len(path)-1], [node]] not in badconnections:
+                        newpaths.append(path + [node])
+
+                        if node == target:
+                            foundpath = False
+                            return(path + [node])
 
         pathlist = newpaths
         newpaths = []

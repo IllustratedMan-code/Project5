@@ -94,15 +94,24 @@
     id: bars
   Tribox:
     id: b
+
 <Tribox>:
   curbar: c
   tri: t
+  addbox: b
 
   Triangulate:
     id:t
   Cbar:
     id:c
-
+  Addboxbutton:
+    id: b
+    
+<Addboxbutton>:
+  Label:
+    size: self.parent.size
+    pos: self.parent.pos
+    text: "ADD BOX"
 <Cbar>:
   Image:
     source: self.parent.id
