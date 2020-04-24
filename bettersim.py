@@ -215,12 +215,12 @@ class grid(RelativeLayout):
             #print("this is{0}".format(self.path[self.emi+1]))
 
             self.temppath = behavior.nodepath(self.path[self.emi+1], self.currentnode, self.nodearray, badnodes=self.badnodes)
-            print(self.temppath)
-            print(self.badnodes)
+            #print(self.temppath)
+            #print("badnodes{0}".format(self.badnodes))
             self.emergencypathfinding = True
             #self.emi += 1
         else:
-            #print(self.temppath)
+            print(self.temppath)
             self.driver(self.speed, self.car.angle)
             self.home = False
             #print("final{0}".format(self.finaldistance))
@@ -231,9 +231,10 @@ class grid(RelativeLayout):
                 del self.temppath[0]
                 self.currentnode = behavior.cnode(self.currentnode, self.car.angle)
                 self.distancefromnode = [0, 0]
-                self.emergencypathfinding = False
-                self.emi += 1
-                print("hi")
+                if self.currentnode == self.path[self.emi+1]:
+                    self.emergencypathfinding = False
+                    self.emi += 1
+                #print("hi")
 
             self.sensors()
 

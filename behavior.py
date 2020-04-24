@@ -101,7 +101,7 @@ def nodepath(target, currentnode, nodematrix, badnodes = None):
         badconnections.append(i)
         badconnections.append([i[1], i[0]])
 
-    print(badconnections)
+    print("badconnections{0}".format(badconnections))
     if target == currentnode:
         return([currentnode])
     pathlist = []
@@ -120,7 +120,7 @@ def nodepath(target, currentnode, nodematrix, badnodes = None):
                 if node not in path and nodematrix[node[0]][node[1]] == 1:
                     #print(path[len(path)-1])
                     #print(node)
-                    if [path[len(path)-1], [node]] not in badconnections:
+                    if [path[len(path)-1], [node]] not in badconnections and [[node], path[len(path)-1]]:
                         newpaths.append(path + [node])
 
                         if node == target:
